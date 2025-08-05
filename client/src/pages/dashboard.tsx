@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/sidebar";
 import FileUpload from "@/components/file-upload";
@@ -7,9 +7,15 @@ import MeetingList from "@/components/meeting-list";
 import ActionItems from "@/components/action-items";
 import ABTesting from "@/components/ab-testing";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Download, Bell } from "lucide-react";
+import { Search, Download, Bell } from "lucide-react";
 
 export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,23 +39,43 @@ export default function Dashboard() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                    />
                   </svg>
                 </div>
-                <h1 className="text-xl font-semibold text-gray-900">TranscribeAI</h1>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  TranscribeAI
+                </h1>
               </div>
-              <span className="text-sm text-gray-500 hidden sm:inline">Meeting Automation Platform</span>
+              <span className="text-sm text-gray-500 hidden sm:inline">
+                Meeting Automation Platform
+              </span>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-gray-500 hover:text-gray-700">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-gray-700"
+              >
                 <Bell className="h-5 w-5" />
               </Button>
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-medium">SM</span>
                 </div>
-                <span className="text-sm font-medium text-gray-700 hidden sm:inline">Sarah Miller</span>
+                <span className="text-sm font-medium text-gray-700 hidden sm:inline">
+                  Sarah Miller
+                </span>
               </div>
             </div>
           </div>
@@ -60,9 +86,9 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <Sidebar 
-              activeTab={activeTab} 
-              onTabChange={setActiveTab} 
+            <Sidebar
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
               stats={stats}
             />
           </div>
@@ -75,7 +101,7 @@ export default function Dashboard() {
                 <TranscriptionProgress />
               </>
             )}
-            
+
             {activeTab === "meetings" && <MeetingList />}
             {activeTab === "action-items" && <ActionItems />}
             {activeTab === "ab-testing" && <ABTesting />}
@@ -96,8 +122,8 @@ export default function Dashboard() {
                 <div className="flex-1">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input 
-                      type="text" 
+                    <Input
+                      type="text"
                       placeholder="Search meetings, transcripts, or action items..."
                       className="pl-10"
                       value={searchQuery}
