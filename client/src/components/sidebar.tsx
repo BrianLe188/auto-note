@@ -1,6 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, FileText, CheckSquare, TrendingUp, Download, Settings } from "lucide-react";
+import { emitter } from "@/eventbus";
+import {
+  Upload,
+  FileText,
+  CheckSquare,
+  TrendingUp,
+  Download,
+  Settings,
+} from "lucide-react";
+import { useEffect } from "react";
 
 interface SidebarProps {
   activeTab: string;
@@ -12,7 +21,11 @@ interface SidebarProps {
   };
 }
 
-export default function Sidebar({ activeTab, onTabChange, stats }: SidebarProps) {
+export default function Sidebar({
+  activeTab,
+  onTabChange,
+  stats,
+}: SidebarProps) {
   const menuItems = [
     { id: "upload", label: "Upload & Transcribe", icon: Upload },
     { id: "meetings", label: "Meeting Library", icon: FileText },
@@ -21,6 +34,14 @@ export default function Sidebar({ activeTab, onTabChange, stats }: SidebarProps)
     { id: "exports", label: "Exports", icon: Download },
     { id: "settings", label: "Settings", icon: Settings },
   ];
+
+  useEffect(() => {
+    emitter.on("sidebar:change-tab", (id) => onTabChange(id));
+
+    return () => {
+      emitter.off("sidebar:change-tab");
+    };
+  }, []);
 
   return (
     <aside className="space-y-6">
@@ -43,16 +64,28 @@ export default function Sidebar({ activeTab, onTabChange, stats }: SidebarProps)
               );
             })}
           </nav>
+
+          {/* Quick Access Links */}
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+              Quick Access
+            </p>
+            <div className="space-y-1"></div>
+          </div>
         </CardContent>
       </Card>
 
       {/* Quick Stats */}
       <Card>
         <CardContent className="p-4">
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">This Month</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">
+            This Month
+          </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Meetings Transcribed</span>
+              <span className="text-sm text-gray-600">
+                Meetings Transcribed
+              </span>
               <span className="text-sm font-semibold text-gray-900">
                 {stats?.meetingsTranscribed || 0}
               </span>

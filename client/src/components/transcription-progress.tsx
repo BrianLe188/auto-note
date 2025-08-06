@@ -1,17 +1,69 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import type { Meeting } from "@shared/schema";
+import { useSocket } from "@/hooks/use-socket";
+import { useEffect, useState } from "react";
+import { Progress } from "./ui/progress";
+import { emitter } from "@/eventbus";
+
+type MeetingProgress = Meeting & { percent?: number };
 
 export default function TranscriptionProgress() {
-  // Get meetings that are currently processing
-  const { data: meetings } = useQuery<Meeting[]>({
+  const { socket } = useSocket();
+
+  const [localMeetings, setLocalMeetings] = useState<MeetingProgress[]>([]);
+
+  const { data: meetings } = useQuery<MeetingProgress[]>({
     queryKey: ["/api/meetings"],
-    refetchInterval: 2000, // Poll every 2 seconds for active transcriptions
   });
 
-  const processingMeetings = meetings?.filter((meeting: any) => meeting.status === "processing") || [];
+  useEffect(() => {
+    if (meetings) {
+      setLocalMeetings(meetings);
+    }
+  }, [meetings]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on(
+      "meeting:init",
+      (data: { meetingId: string; percent: number }) => {
+        setLocalMeetings((state) => {
+          let doneMeeting: Meeting | null = null;
+
+          const updated = state.map((meeting) => {
+            if (meeting.id === data.meetingId) {
+              const updated = { ...meeting, percent: data.percent };
+              if (data.percent >= 100) {
+                updated.status = "completed";
+                doneMeeting = updated;
+              }
+              return updated;
+            }
+            return meeting;
+          });
+
+          setTimeout(() => {
+            if (doneMeeting) {
+              emitter.emit("meeting:done", doneMeeting);
+            }
+          }, 0);
+
+          return updated;
+        });
+      },
+    );
+
+    return () => {
+      socket.off("meeting:init");
+    };
+  }, [socket]);
+
+  const processingMeetings =
+    localMeetings?.filter((meeting: any) => meeting.status === "processing") ||
+    [];
 
   if (processingMeetings.length === 0) {
     return null;
@@ -21,10 +73,15 @@ export default function TranscriptionProgress() {
     <Card>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Active Transcription</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Active Transcription
+          </h2>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <Badge variant="outline" className="text-green-600 border-green-200">
+            <Badge
+              variant="outline"
+              className="text-green-600 border-green-200"
+            >
               Processing
             </Badge>
           </div>
@@ -32,17 +89,15 @@ export default function TranscriptionProgress() {
 
         {processingMeetings.map((meeting) => (
           <div key={meeting.id} className="mb-6 last:mb-0">
-            {/* Transcription Progress */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-medium text-gray-700">{meeting.title}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {meeting.title}
+                </span>
                 <span className="text-sm text-gray-500">Processing...</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div 
-                  className="bg-green-500 h-2 rounded-full transition-all duration-500 animate-pulse" 
-                  style={{ width: "45%" }}
-                ></div>
+                <Progress value={meeting?.percent || 0} className="h-2" />
               </div>
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Processing audio...</span>
