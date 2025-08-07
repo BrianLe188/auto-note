@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,9 @@ import {
   CheckSquare,
   AlertTriangle,
   ChevronDown,
+  Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -30,6 +34,7 @@ import type { Meeting, ActionItem } from "@shared/schema";
 export default function MeetingDetail() {
   const [, params] = useRoute("/meetings/:id");
   const meetingId = params?.id;
+  const [showDescriptions, setShowDescriptions] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -57,6 +62,53 @@ export default function MeetingDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/action-items"] });
       queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+    },
+  });
+
+  const generateDescriptionMutation = useMutation({
+    mutationFn: async (actionItemId: string) => {
+      return apiRequest(
+        "POST",
+        `/api/action-items/${actionItemId}/generate-description`,
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/action-items"] });
+      toast({
+        title: "Description has been generated!",
+        description:
+          "AI has generated a detailed description for this action item.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Unable to create description. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateBulkDescriptionsMutation = useMutation({
+    mutationFn: async (meetingId: string) => {
+      return apiRequest(
+        "POST",
+        `/api/meetings/${meetingId}/generate-action-descriptions`,
+      );
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/action-items"] });
+      toast({
+        title: "Bulk description creation successful!",
+        description: `Created descriptions for ${data.count} action items.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Could not create description. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -137,9 +189,8 @@ export default function MeetingDetail() {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
-          <Link href="/" className="text-primary hover:text-primary/80">
+          <Link href="/meetings" className="text-primary hover:text-primary/80">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Meetings
@@ -203,8 +254,6 @@ export default function MeetingDetail() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-        {/* Meeting Info */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -273,8 +322,6 @@ export default function MeetingDetail() {
             )}
           </CardContent>
         </Card>
-
-        {/* Action Items */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -282,12 +329,43 @@ export default function MeetingDetail() {
                 <CheckSquare className="h-5 w-5" />
                 Action Items ({meetingActionItems?.length || 0})
               </div>
-              {meetingActionItems && meetingActionItems.length > 0 && (
-                <div className="text-sm text-gray-600">
-                  {meetingActionItems.filter((item) => item.completed).length}{" "}
-                  of {meetingActionItems.length} completed
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDescriptions(!showDescriptions)}
+                >
+                  {showDescriptions ? (
+                    <EyeOff className="h-4 w-4 mr-2" />
+                  ) : (
+                    <Eye className="h-4 w-4 mr-2" />
+                  )}
+                  {showDescriptions ? "Hide Descriptions" : "Show Descriptions"}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    generateBulkDescriptionsMutation.mutate(meetingId!)
+                  }
+                  disabled={
+                    generateBulkDescriptionsMutation.isPending || !meetingId
+                  }
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {generateBulkDescriptionsMutation.isPending
+                    ? "Generating..."
+                    : "Generate All Descriptions"}
+                </Button>
+
+                {meetingActionItems && meetingActionItems.length > 0 && (
+                  <div className="text-sm text-gray-600">
+                    {meetingActionItems.filter((item) => item.completed).length}{" "}
+                    of {meetingActionItems.length} completed
+                  </div>
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -344,6 +422,22 @@ export default function MeetingDetail() {
                               {item.text}
                             </p>
                             <div className="flex items-center gap-2 ml-4">
+                              {!item.description && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    generateDescriptionMutation.mutate(item.id)
+                                  }
+                                  disabled={
+                                    generateDescriptionMutation.isPending
+                                  }
+                                  className="text-xs"
+                                >
+                                  <Sparkles className="h-3 w-3 mr-1" />
+                                  Generate AI Description
+                                </Button>
+                              )}
                               <Badge
                                 className={getPriorityColor(item.priority)}
                               >
@@ -357,6 +451,17 @@ export default function MeetingDetail() {
                               )}
                             </div>
                           </div>
+
+                          {showDescriptions && item.description && (
+                            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                              <p className="text-sm text-blue-800 font-medium mb-1">
+                                AI Generated Description:
+                              </p>
+                              <p className="text-sm text-blue-700">
+                                {item.description}
+                              </p>
+                            </div>
+                          )}
 
                           <div className="flex items-center justify-between text-sm text-gray-600">
                             <div className="flex items-center gap-4">

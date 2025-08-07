@@ -220,6 +220,7 @@ export class MemStorage implements IStorage {
       assignee: insertActionItem.assignee ?? null,
       dueDate: insertActionItem.dueDate ?? null,
       priority: insertActionItem.priority ?? "medium",
+      description: insertActionItem.description ?? null,
     };
     this.actionItems.set(id, actionItem);
     return actionItem;
@@ -474,6 +475,7 @@ export class DrizzleStorage implements IStorage {
         assignee: data.assignee ?? null,
         dueDate: data.dueDate ?? null,
         priority: data.priority ?? "medium",
+        description: data.description ?? null,
       })
       .returning();
     return item;
