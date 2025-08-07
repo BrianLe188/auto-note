@@ -19,6 +19,7 @@ export interface ActionItemResult {
   assignee?: string;
   priority: "low" | "medium" | "high";
   dueDate?: string;
+  description?: string;
 }
 
 export async function transcribeAudio(
@@ -57,6 +58,7 @@ export async function extractActionItems(
     Return a JSON object with an "actionItems" array. Each action item should have:
     - text: the action item description
     - assignee: person assigned (if mentioned, otherwise null)
+    - description: more details about this action (if mentioned, otherwise null)
     - priority: "low", "medium", or "high" based on urgency/importance
     - dueDate: date mentioned or null (format: YYYY-MM-DD)`;
 

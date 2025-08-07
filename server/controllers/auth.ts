@@ -1,5 +1,5 @@
 import { insertUserSchema } from "@shared/schema";
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import { storage } from "@server/storage";
 import {
@@ -8,8 +8,9 @@ import {
   generateToken,
   hashPassword,
 } from "@server/middlewares/auth";
+import { AppError } from "@server/middlewares/error-handler";
 
-export async function signUp(req: Request, res: Response) {
+export async function signUp(req: Request, res: Response, next: NextFunction) {
   const signupSchema = insertUserSchema.extend({
     password: z.string().min(6),
   });
@@ -20,9 +21,7 @@ export async function signUp(req: Request, res: Response) {
     // Check if user already exists
     const existingUser = await storage.getUserByEmail(validatedData.email);
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ error: "User already exists with this email" });
+      return next(new AppError("User already exists with this email", 400));
     }
 
     // Hash password
@@ -49,14 +48,16 @@ export async function signUp(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error("Signup error:", error);
-    res.status(400).json({
-      error: error instanceof Error ? error.message : "Invalid input",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response, next: NextFunction) {
   const loginSchema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
@@ -68,7 +69,7 @@ export async function login(req: Request, res: Response) {
     // Find user
     const user = await storage.getUserByEmail(validatedData.email);
     if (!user || !user.password) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return next(new AppError("Invalid credentials", 401));
     }
 
     // Verify password
@@ -77,7 +78,7 @@ export async function login(req: Request, res: Response) {
       user.password,
     );
     if (!isValidPassword) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return next(new AppError("Invalid credentials", 401));
     }
 
     // Generate token
@@ -93,10 +94,12 @@ export async function login(req: Request, res: Response) {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(400).json({
-      error: error instanceof Error ? error.message : "Invalid input",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
@@ -116,10 +119,18 @@ export async function logout(req: Request, res: Response) {
   res.json({ message: "Logged out successfully" });
 }
 
-export async function loginGoogle(req: Request, res: Response) {
-  res.status(501).json({ error: "Google OAuth not yet implemented" });
+export async function loginGoogle(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  next(new AppError("Google OAuth not yet implemented", 501));
 }
 
-export async function loginApple(req: Request, res: Response) {
-  res.status(501).json({ error: "Apple ID not yet implemented" });
+export async function loginApple(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  next(new AppError("Apple ID not yet implemented", 501));
 }

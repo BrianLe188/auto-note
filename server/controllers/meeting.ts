@@ -1,18 +1,23 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { MulterRequest } from "@server/middlewares/upload";
 import { processTranscription } from "@server/services/meeting";
 import { storage } from "@server/storage";
+import { AppError } from "@server/middlewares/error-handler";
 
-export async function meetingUpload(req: MulterRequest, res: Response) {
+export async function meetingUpload(
+  req: MulterRequest,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return next(new AppError("No file uploaded", 400));
     }
 
     const { title, date, participants, abTestGroup = "default" } = req.body;
 
     if (!title || !date || !participants) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return next(new AppError("Missing required fields", 400));
     }
 
     // Create meeting record
@@ -36,14 +41,21 @@ export async function meetingUpload(req: MulterRequest, res: Response) {
       message: "Upload successful, transcription started",
     });
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    console.error(error);
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function getMeetings(req: Request, res: Response) {
+export async function getMeetings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const limit = req.query.limit
       ? parseInt(req.query.limit as string)
@@ -51,44 +63,68 @@ export async function getMeetings(req: Request, res: Response) {
     const meetings = await storage.getMeetings(limit);
     res.json(meetings);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function getMeetingById(req: Request, res: Response) {
+export async function getMeetingById(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const meeting = await storage.getMeeting(req.params.id);
     if (!meeting) {
-      return res.status(404).json({ message: "Meeting not found" });
+      return next(new AppError("Meeting not found", 404));
     }
     res.json(meeting);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function searchMeeting(req: Request, res: Response) {
+export async function searchMeeting(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const meetings = await storage.searchMeetings(req.params.query);
     res.json(meetings);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function getActionsOfMeeting(req: Request, res: Response) {
+export async function getActionsOfMeeting(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const actionItems = await storage.getActionItemsByMeeting(req.params.id);
     res.json(actionItems);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }

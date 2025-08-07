@@ -97,7 +97,7 @@ export default function TranscriptionProgress() {
                 <span className="text-sm text-gray-500">Processing...</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <Progress value={meeting?.percent || 0} className="h-2" />
+                <Progress value={meeting?.percent || 20} className="h-2" />
               </div>
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Processing audio...</span>

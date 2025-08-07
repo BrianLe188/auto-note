@@ -1,7 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { storage } from "@server/storage";
+import { AppError } from "@server/middlewares/error-handler";
 
-export async function getStats(req: Request, res: Response) {
+export async function getStats(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const meetings = await storage.getMeetings();
     const actionItems = await storage.getAllActionItems();
@@ -25,8 +30,11 @@ export async function getStats(req: Request, res: Response) {
       hoursSaved: Math.round(hoursSaved * 10) / 10,
     });
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }

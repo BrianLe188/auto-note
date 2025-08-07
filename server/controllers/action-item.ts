@@ -1,7 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { storage } from "@server/storage";
+import { AppError } from "@server/middlewares/error-handler";
 
-export async function getActionItems(req: Request, res: Response) {
+export async function getActionItems(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const limit = req.query.limit
       ? parseInt(req.query.limit as string)
@@ -9,13 +14,20 @@ export async function getActionItems(req: Request, res: Response) {
     const actionItems = await storage.getAllActionItems(limit);
     res.json(actionItems);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function getActionItemById(req: Request, res: Response) {
+export async function getActionItemById(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const updates = req.body;
     const actionItem = await storage.updateActionItem(req.params.id, updates);
@@ -24,8 +36,11 @@ export async function getActionItemById(req: Request, res: Response) {
     }
     res.json(actionItem);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }

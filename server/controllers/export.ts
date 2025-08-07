@@ -1,9 +1,14 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { convertToCSV } from "@server/services/export";
 import { storage } from "@server/storage";
 import { AuthRequest } from "@server/middlewares/auth";
+import { AppError } from "@server/middlewares/error-handler";
 
-export async function exportByType(req: Request, res: Response) {
+export async function exportByType(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const { type } = req.params;
     const format = req.query.format || "json";
@@ -42,13 +47,20 @@ export async function exportByType(req: Request, res: Response) {
       res.json(data);
     }
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function exportMeetings(req: AuthRequest, res: Response) {
+export async function exportMeetings(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const { format = "csv", status, date } = req.query;
     const meetings = await storage.getMeetings();
@@ -126,17 +138,18 @@ export async function exportMeetings(req: AuthRequest, res: Response) {
         })),
       });
     } else {
-      res
-        .status(400)
-        .json({ error: "Unsupported format. Use 'csv' or 'json'" });
+      next(new AppError("Unsupported format. Use 'csv' or 'json'", 500));
     }
   } catch (error) {
-    console.error("Export meetings error:", error);
-    res.status(500).json({ error: "Failed to export meetings" });
+    next(new AppError("Failed to export meetings", 500));
   }
 }
 
-export async function exportActionItems(req: AuthRequest, res: Response) {
+export async function exportActionItems(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const { format = "csv", priority, status } = req.query;
     const actionItems = await storage.getAllActionItems();
@@ -201,24 +214,25 @@ export async function exportActionItems(req: AuthRequest, res: Response) {
         actionItems: enrichedItems,
       });
     } else {
-      res
-        .status(400)
-        .json({ error: "Unsupported format. Use 'csv' or 'json'" });
+      next(new AppError("Unsupported format. Use 'csv' or 'json'", 400));
     }
   } catch (error) {
-    console.error("Export action items error:", error);
-    res.status(500).json({ error: "Failed to export action items" });
+    next(new AppError("Failed to export action items", 500));
   }
 }
 
-export async function exportMeetingById(req: AuthRequest, res: Response) {
+export async function exportMeetingById(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const { id } = req.params;
     const { format = "txt" } = req.query;
 
     const meeting = await storage.getMeeting(id);
     if (!meeting) {
-      return res.status(404).json({ error: "Meeting not found" });
+      return next(new AppError("Meeting not found", 404));
     }
 
     const actionItems = await storage.getActionItemsByMeeting(id);
@@ -274,12 +288,9 @@ Generated on: ${new Date().toLocaleString()}
         exportDate: new Date().toISOString(),
       });
     } else {
-      res
-        .status(400)
-        .json({ error: "Unsupported format. Use 'txt' or 'json'" });
+      next(new AppError("Unsupported format. Use 'txt' or 'json'", 400));
     }
   } catch (error) {
-    console.error("Export meeting error:", error);
-    res.status(500).json({ error: "Failed to export meeting" });
+    next(new AppError("Failed to export meeting", 500));
   }
 }

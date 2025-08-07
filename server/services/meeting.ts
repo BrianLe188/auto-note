@@ -17,8 +17,6 @@ export async function processTranscription(
     const tests = await storage.getAbTests();
     const test = tests.find((t) => t.model === abTestGroup) || tests[0];
 
-    emitter.emit("meeting:init", { meetingId, percent: 10 });
-
     const startTime = Date.now();
 
     // Transcribe audio
@@ -51,10 +49,11 @@ export async function processTranscription(
       const action = await storage.createActionItem({
         meetingId,
         text: item.text,
-        assignee: item.assignee || null,
-        priority: item.priority,
-        dueDate: item.dueDate || null,
+        assignee: item?.assignee || null,
+        priority: item?.priority,
+        dueDate: item?.dueDate || null,
         completed: false,
+        description: item?.description || null,
       });
       actions.push(action);
     }

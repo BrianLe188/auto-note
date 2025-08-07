@@ -39,6 +39,7 @@ export const actionItems = pgTable("action_items", {
   priority: text("priority").notNull().default("medium"), // low, medium, high
   dueDate: text("due_date"),
   completed: boolean("completed").default(false).notNull(),
+  description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

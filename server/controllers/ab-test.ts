@@ -1,18 +1,30 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { storage } from "@server/storage";
+import { AppError } from "@server/middlewares/error-handler";
 
-export async function getAbTests(req: Request, res: Response) {
+export async function getAbTests(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const tests = await storage.getAbTests();
     res.json(tests);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
 
-export async function getAbTestResults(req: Request, res: Response) {
+export async function getAbTestResults(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   try {
     const tests = await storage.getAbTests();
     const results = await Promise.all(
@@ -60,8 +72,11 @@ export async function getAbTestResults(req: Request, res: Response) {
     );
     res.json(results);
   } catch (error) {
-    res.status(500).json({
-      message: error instanceof Error ? error.message : "Unknown error",
-    });
+    next(
+      new AppError(
+        error instanceof Error ? error.message : "Unknown error",
+        500,
+      ),
+    );
   }
 }
