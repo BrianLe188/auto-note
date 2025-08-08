@@ -37,7 +37,7 @@ export default function Login() {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  const { login, signup, isLoading } = useAuth();
+  const { login, signup, oAuthLogin, isLoading } = useAuth();
 
   const loginForm = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -93,8 +93,7 @@ export default function Login() {
 
   const handleOAuthLogin = async (provider: "google" | "apple") => {
     try {
-      // In a real implementation, this would redirect to OAuth provider
-      window.location.href = `/api/auth/${provider}`;
+      oAuthLogin(provider);
     } catch (error) {
       toast({
         title: "OAuth Error",

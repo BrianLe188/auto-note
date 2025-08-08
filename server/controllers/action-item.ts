@@ -2,17 +2,22 @@ import { NextFunction, Request, Response } from "express";
 import { storage } from "@server/storage";
 import { AppError } from "@server/middlewares/error-handler";
 import { generateActionItemDescription } from "@server/services/openai";
+import { AuthRequest } from "@server/middlewares/auth";
 
 export async function getActionItems(
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) {
   try {
+    const user = req.user;
+
     const limit = req.query.limit
       ? parseInt(req.query.limit as string)
       : undefined;
+
     const actionItems = await storage.getAllActionItems(limit);
+
     res.json(actionItems);
   } catch (error) {
     next(

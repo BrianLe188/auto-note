@@ -10,6 +10,7 @@ import { emitter } from "@server/eventbus";
 
 export async function processTranscription(
   meetingId: string,
+  userId: string,
   filePath: string,
   abTestGroup: string,
 ) {
@@ -60,6 +61,7 @@ export async function processTranscription(
         dueDate: item?.dueDate || null,
         completed: false,
         description: description,
+        userId,
       });
       actions.push(action);
     }

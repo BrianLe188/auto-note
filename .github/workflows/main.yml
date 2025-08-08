@@ -3,7 +3,7 @@ name: CI/CD to Railway
 on:
   push:
     branches: ["main"]
-  pull:
+  pull_request:
     branches: ["main"]
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: action/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install packages
         run: npm install

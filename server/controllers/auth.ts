@@ -9,6 +9,8 @@ import {
   hashPassword,
 } from "@server/middlewares/auth";
 import { AppError } from "@server/middlewares/error-handler";
+import { getUserInfoFromToken } from "@server/services/google";
+import { randomUUID } from "crypto";
 
 export async function signUp(req: Request, res: Response, next: NextFunction) {
   const signupSchema = insertUserSchema.extend({
@@ -45,6 +47,7 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
       },
     });
   } catch (error) {
@@ -91,6 +94,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+
+        profileImageUrl: user.profileImageUrl,
       },
     });
   } catch (error) {
@@ -110,6 +115,7 @@ export async function getMe(req: AuthRequest, res: Response) {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    profileImageUrl: user.profileImageUrl,
   });
 }
 
@@ -124,7 +130,48 @@ export async function loginGoogle(
   res: Response,
   next: NextFunction,
 ) {
-  next(new AppError("Google OAuth not yet implemented", 501));
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return next(new AppError("Missing token in google verify.", 400));
+    }
+
+    const googleUserInfo = await getUserInfoFromToken(token as string);
+
+    let user = await storage.getUserByEmail(googleUserInfo.email);
+
+    if (!user) {
+      const hashedPassword = await hashPassword(randomUUID());
+
+      user = await storage.createUser({
+        email: googleUserInfo.email,
+        password: hashedPassword,
+        firstName: googleUserInfo?.given_name,
+        lastName: googleUserInfo?.family_name,
+        profileImageUrl: googleUserInfo?.picture,
+        provider: "google",
+        providerId: googleUserInfo?.sub,
+        isEmailVerified: true,
+      });
+    }
+
+    const access_token = generateToken(user.id);
+
+    res.json({
+      token: access_token,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    next(new AppError("Google OAuth not yet implemented", 501));
+  }
 }
 
 export async function loginApple(

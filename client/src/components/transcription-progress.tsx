@@ -6,6 +6,7 @@ import { useSocket } from "@/hooks/use-socket";
 import { useEffect, useState } from "react";
 import { Progress } from "./ui/progress";
 import { emitter } from "@/eventbus";
+import { queryClient } from "@/lib/queryClient";
 
 type MeetingProgress = Meeting & { percent?: number };
 
@@ -48,6 +49,14 @@ export default function TranscriptionProgress() {
           setTimeout(() => {
             if (doneMeeting) {
               emitter.emit("meeting:done", doneMeeting);
+
+              queryClient.invalidateQueries({
+                queryKey: ["/api/action-items"],
+              });
+              queryClient.invalidateQueries({
+                queryKey: ["/api/meetings"],
+              });
+              queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
             }
           }, 0);
 

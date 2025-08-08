@@ -1,8 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Filter, ArrowUpDown, CheckSquare } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 import type { ActionItem } from "@shared/schema";
 import { useSocket } from "@/hooks/use-socket";
 import { useEffect, useState } from "react";
@@ -21,8 +20,6 @@ export default function ActionItems({
   isShowDescriptionActionButton,
 }: ActionItemsProps) {
   const { socket } = useSocket();
-
-  const queryClient = useQueryClient();
 
   const { data: actionItems, isLoading } = useQuery<ActionItem[]>({
     queryKey: ["/api/action-items"],

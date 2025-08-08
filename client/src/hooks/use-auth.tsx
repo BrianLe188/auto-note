@@ -8,6 +8,8 @@ import {
 } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useGoogleLogin } from "@react-oauth/google";
+import { useLocation } from "wouter";
 
 interface User {
   id: string;
@@ -28,6 +30,7 @@ interface AuthContextType {
     lastName: string;
   }) => Promise<void>;
   logout: () => void;
+  oAuthLogin: (provider: "google" | "apple") => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -41,7 +44,10 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const [location, navigate] = useLocation();
+
   const queryClient = useQueryClient();
+
   const [token, setToken] = useState<string | null>(() =>
     typeof window !== "undefined" ? localStorage.getItem("authToken") : null,
   );
@@ -68,6 +74,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         // If token is invalid, clear it
         localStorage.removeItem("authToken");
         setToken(null);
+        navigate("/login");
         throw error;
       }
     },
@@ -114,6 +121,33 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await loginMutation.mutateAsync({ email, password });
   };
 
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (googleToken) => {
+      const data = await apiRequest(
+        "GET",
+        `/api/auth/google?token=${googleToken.access_token}`,
+      );
+      const { token, user } = await data.json();
+
+      if (token && user) {
+        setToken(token);
+        localStorage.setItem("authToken", token);
+        queryClient.setQueryData(["/api/auth/me"], user);
+      }
+    },
+  });
+
+  const appleLogin = () => {};
+
+  const oAuthLogin = async (provider: "google" | "apple") => {
+    switch (provider) {
+      case "google":
+        return googleLogin();
+      case "apple":
+        return appleLogin();
+    }
+  };
+
   const signup = async (userData: {
     email: string;
     password: string;
@@ -145,6 +179,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
     }
   }, [token]);
 
+  useEffect(() => {
+    if (!token) {
+      return navigate("/login");
+    }
+    if (user && location === "/login") {
+      return navigate("/");
+    }
+  }, [user]);
+
   const value = useMemo(
     () => ({
       user: user || null,
@@ -154,8 +197,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       login,
       signup,
       logout,
+      oAuthLogin,
     }),
-    [user, isLoading, login, signup, logout],
+    [user, isLoading, login, signup, logout, oAuthLogin],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

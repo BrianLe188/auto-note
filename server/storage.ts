@@ -25,7 +25,7 @@ import { desc, eq, or, sql } from "drizzle-orm";
 export interface IStorage {
   // Meetings
   getMeeting(id: string): Promise<Meeting | undefined>;
-  getMeetings(limit?: number): Promise<Meeting[]>;
+  getMeetings(limit?: number, userId?: string): Promise<Meeting[]>;
   createMeeting(meeting: InsertMeeting): Promise<Meeting>;
   updateMeeting(
     id: string,
@@ -36,7 +36,7 @@ export interface IStorage {
   // Action Items
   getActionItem(id: string): Promise<ActionItem | undefined>;
   getActionItemsByMeeting(meetingId: string): Promise<ActionItem[]>;
-  getAllActionItems(limit?: number): Promise<ActionItem[]>;
+  getAllActionItems(limit?: number, userId?: string): Promise<ActionItem[]>;
   createActionItem(actionItem: InsertActionItem): Promise<ActionItem>;
   updateActionItem(
     id: string,
@@ -386,12 +386,14 @@ export class DrizzleStorage implements IStorage {
       .where(eq(meetings.id, id));
     return meeting;
   }
-  async getMeetings(limit = 50): Promise<Meeting[]> {
-    return db
-      .select()
-      .from(meetings)
-      .orderBy(desc(meetings.createdAt))
-      .limit(limit);
+  async getMeetings(limit = 50, userId?: string): Promise<Meeting[]> {
+    const fromDb = db.select().from(meetings);
+
+    if (userId) {
+      fromDb.where(eq(meetings.userId, userId));
+    }
+
+    return fromDb.orderBy(desc(meetings.createdAt)).limit(limit);
   }
   async createMeeting(data: InsertMeeting): Promise<Meeting> {
     const [meeting] = await db
@@ -448,10 +450,14 @@ export class DrizzleStorage implements IStorage {
       .where(eq(actionItems.meetingId, meetingId))
       .orderBy(desc(actionItems.priority));
   }
-  async getAllActionItems(limit = 50): Promise<ActionItem[]> {
-    return db
-      .select()
-      .from(actionItems)
+  async getAllActionItems(limit = 50, userId?: string): Promise<ActionItem[]> {
+    const fromDb = db.select().from(actionItems);
+
+    if (userId) {
+      fromDb.where(eq(actionItems.userId, userId));
+    }
+
+    return fromDb
       .orderBy(
         sql`
         completed ASC,

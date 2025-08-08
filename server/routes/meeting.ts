@@ -6,7 +6,7 @@ import {
   searchMeeting,
   getActionsOfMeeting,
 } from "@server/controllers/meeting";
-import { optionalAuth } from "@server/middlewares/auth";
+import { authenticateUser } from "@server/middlewares/auth";
 import { upload } from "@server/middlewares/upload";
 
 export function registerMeetingRoutes() {
@@ -14,18 +14,18 @@ export function registerMeetingRoutes() {
 
   router.post(
     "/upload",
-    optionalAuth,
+    authenticateUser,
     upload.single("audioFile"),
     meetingUpload,
   );
 
-  router.get("", getMeetings);
+  router.get("", authenticateUser, getMeetings);
 
-  router.get("/:id", getMeetingById);
+  router.get("/:id", authenticateUser, getMeetingById);
 
-  router.get("/search/:query", searchMeeting);
+  router.get("/search/:query", authenticateUser, searchMeeting);
 
-  router.get("/:id/action-items", getActionsOfMeeting);
+  router.get("/:id/action-items", authenticateUser, getActionsOfMeeting);
 
   return router;
 }

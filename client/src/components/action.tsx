@@ -27,6 +27,7 @@ export default function Action({
   isShowDescriptionActionButton = true,
 }: Props) {
   const [localItem, setLocalItem] = useState(item);
+  const [showDescription, setShowDescription] = useState(false);
 
   const { toast } = useToast();
 
@@ -62,6 +63,8 @@ export default function Action({
 
       setLocalItem(action);
 
+      setShowDescription(true);
+
       toast({
         title: "Description has been generated!",
         description:
@@ -76,8 +79,6 @@ export default function Action({
       });
     },
   });
-
-  const [showDescription, setShowDescription] = useState(false);
 
   const handleToggleComplete = (id: string, completed: boolean) => {
     updateActionItemMutation.mutate({ id, completed: !completed });

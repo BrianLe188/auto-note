@@ -15,6 +15,9 @@ export const meetings = pgTable("meetings", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
+  userId: varchar("userId")
+    .references(() => users.id)
+    .notNull(),
   title: text("title").notNull(),
   date: text("date").notNull(),
   participants: text("participants").notNull(),
@@ -33,6 +36,9 @@ export const actionItems = pgTable("action_items", {
     .default(sql`gen_random_uuid()`),
   meetingId: varchar("meeting_id")
     .references(() => meetings.id)
+    .notNull(),
+  userId: varchar("userId")
+    .references(() => users.id)
     .notNull(),
   text: text("text").notNull(),
   assignee: text("assignee"),

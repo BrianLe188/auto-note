@@ -4,6 +4,7 @@ import {
   getActionItemById,
   generateDescription,
 } from "@server/controllers/action-item";
+import { authenticateUser } from "@server/middlewares/auth";
 
 export function registerActionItemRoutes() {
   const router = Router();
@@ -12,7 +13,11 @@ export function registerActionItemRoutes() {
 
   router.patch("/:id", getActionItemById);
 
-  router.post("/:id/generate-description", generateDescription);
+  router.post(
+    "/:id/generate-description",
+    authenticateUser,
+    generateDescription,
+  );
 
   return router;
 }

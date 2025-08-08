@@ -5,18 +5,18 @@ import {
   exportMeetingById,
   exportMeetings,
 } from "@server/controllers/export";
-import { optionalAuth } from "@server/middlewares/auth";
+import { authenticateUser } from "@server/middlewares/auth";
 
 export function registerExportRoutes() {
   const router = Router();
 
-  router.get("/meetings", optionalAuth, exportMeetings);
+  router.get("/meetings", authenticateUser, exportMeetings);
 
-  router.get("/action-items", optionalAuth, exportActionItems);
+  router.get("/action-items", authenticateUser, exportActionItems);
 
-  router.get("/meeting/:id", optionalAuth, exportMeetingById);
+  router.get("/meeting/:id", authenticateUser, exportMeetingById);
 
-  router.get("/:type", exportByType);
+  router.get("/:type", authenticateUser, exportByType);
 
   return router;
 }

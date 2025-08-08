@@ -3,9 +3,10 @@ import { MulterRequest } from "@server/middlewares/upload";
 import { processTranscription } from "@server/services/meeting";
 import { storage } from "@server/storage";
 import { AppError } from "@server/middlewares/error-handler";
+import { AuthRequest } from "@server/middlewares/auth";
 
 export async function meetingUpload(
-  req: MulterRequest,
+  req: MulterRequest & AuthRequest,
   res: Response,
   next: NextFunction,
 ) {
@@ -15,6 +16,8 @@ export async function meetingUpload(
     }
 
     const { title, date, participants, abTestGroup = "default" } = req.body;
+
+    const user = req.user!;
 
     if (!title || !date || !participants) {
       return next(new AppError("Missing required fields", 400));
@@ -29,12 +32,13 @@ export async function meetingUpload(
       filePath: req.file.path,
       status: "processing",
       abTestGroup,
+      userId: user.id,
     };
 
     const meeting = await storage.createMeeting(meetingData);
 
     // Start transcription process (async)
-    processTranscription(meeting.id, req.file.path, abTestGroup);
+    processTranscription(meeting.id, user.id, req.file.path, abTestGroup);
 
     res.json({
       meeting,
@@ -52,15 +56,19 @@ export async function meetingUpload(
 }
 
 export async function getMeetings(
-  req: Request,
+  req: AuthRequest,
   res: Response,
   next: NextFunction,
 ) {
   try {
+    const user = req.user;
+
     const limit = req.query.limit
       ? parseInt(req.query.limit as string)
       : undefined;
-    const meetings = await storage.getMeetings(limit);
+
+    const meetings = await storage.getMeetings(limit, user?.id);
+
     res.json(meetings);
   } catch (error) {
     next(
