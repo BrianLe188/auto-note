@@ -53,6 +53,7 @@ export async function generateDescription(
 ) {
   try {
     const actionItem = await storage.getActionItem(req.params.id);
+
     if (!actionItem) {
       return next(new AppError("Action item not found", 404));
     }
@@ -69,6 +70,7 @@ export async function generateDescription(
     const updatedItem = await storage.updateActionItem(req.params.id, {
       description,
     });
+
     res.json(updatedItem);
   } catch (error) {
     next(

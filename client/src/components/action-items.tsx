@@ -1,21 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Filter, ArrowUpDown, CheckSquare, Users, Clock } from "lucide-react";
+import { Filter, ArrowUpDown, CheckSquare } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import type { ActionItem } from "@shared/schema";
 import { useSocket } from "@/hooks/use-socket";
 import { useEffect, useState } from "react";
 import { emitter } from "@/eventbus";
+import Action from "./action";
 
 interface ActionItemsProps {
   limit?: number;
   searchQuery?: string;
+  isShowDescriptionActionButton?: boolean;
 }
 
-export default function ActionItems({ limit, searchQuery }: ActionItemsProps) {
+export default function ActionItems({
+  limit,
+  searchQuery,
+  isShowDescriptionActionButton,
+}: ActionItemsProps) {
   const { socket } = useSocket();
 
   const queryClient = useQueryClient();
@@ -25,22 +29,6 @@ export default function ActionItems({ limit, searchQuery }: ActionItemsProps) {
   });
 
   const [localActionItems, setLocalActionItems] = useState<ActionItem[]>([]);
-
-  const updateActionItemMutation = useMutation({
-    mutationFn: async ({
-      id,
-      completed,
-    }: {
-      id: string;
-      completed: boolean;
-    }) => {
-      return apiRequest("PATCH", `/api/action-items/${id}`, { completed });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/action-items"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-    },
-  });
 
   useEffect(() => {
     if (actionItems) {
@@ -90,23 +78,6 @@ export default function ActionItems({ limit, searchQuery }: ActionItemsProps) {
   });
 
   const displayItems = limit ? sortedItems?.slice(0, limit) : sortedItems;
-
-  const getPriorityBadgeColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-700";
-      case "medium":
-        return "bg-orange-100 text-orange-700";
-      case "low":
-        return "bg-blue-100 text-blue-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const handleToggleComplete = (id: string, completed: boolean) => {
-    updateActionItemMutation.mutate({ id, completed: !completed });
-  };
 
   if (isLoading) {
     return (
@@ -169,69 +140,11 @@ export default function ActionItems({ limit, searchQuery }: ActionItemsProps) {
         ) : (
           <div className="space-y-4">
             {displayItems.map((item) => (
-              <div
+              <Action
                 key={item.id}
-                className={`bg-white border-2 rounded-lg p-4 transition-all duration-200 ${
-                  item.completed
-                    ? "border-gray-200 bg-gray-50 opacity-75"
-                    : item.priority === "high"
-                      ? "border-red-200 bg-red-50 hover:shadow-md"
-                      : item.priority === "medium"
-                        ? "border-orange-200 bg-orange-50 hover:shadow-md"
-                        : "border-blue-200 bg-blue-50 hover:shadow-md"
-                }`}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className="flex items-center pt-1">
-                    <Checkbox
-                      checked={item.completed}
-                      onCheckedChange={() =>
-                        handleToggleComplete(item.id, item.completed)
-                      }
-                      className="h-5 w-5"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <p
-                        className={`text-base font-medium ${item.completed ? "line-through text-gray-500" : "text-gray-900"}`}
-                      >
-                        {item.text}
-                      </p>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <Badge className={getPriorityBadgeColor(item.priority)}>
-                          {item.priority.toUpperCase()}
-                        </Badge>
-                        {!item.completed && item.priority === "high" && (
-                          <span className="text-red-500 text-lg">🔥</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <div className="flex items-center space-x-4">
-                        {item.assignee && (
-                          <div className="flex items-center space-x-1">
-                            <Users className="h-4 w-4" />
-                            <span>{item.assignee}</span>
-                          </div>
-                        )}
-                        {item.dueDate && (
-                          <div className="flex items-center space-x-1">
-                            <Clock className="h-4 w-4" />
-                            <span>
-                              Due {new Date(item.dueDate).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-400">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                item={item}
+                isShowDescriptionActionButton={isShowDescriptionActionButton}
+              />
             ))}
           </div>
         )}

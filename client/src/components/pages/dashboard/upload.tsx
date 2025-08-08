@@ -11,7 +11,7 @@ export default function DashboardUpload() {
       <TranscriptionProgress />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <MeetingList limit={3} />
-        <ActionItems limit={4} />
+        <ActionItems limit={4} isShowDescriptionActionButton={false} />
       </div>
       <ABTesting />
     </>

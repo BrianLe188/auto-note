@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { exportMeeting } from "@/lib/export";
 import {
@@ -24,18 +22,19 @@ import {
   AlertTriangle,
   ChevronDown,
   Sparkles,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import type { Meeting, ActionItem } from "@shared/schema";
+import Action from "@/components/action";
 
 export default function MeetingDetail() {
   const [, params] = useRoute("/meetings/:id");
+
   const meetingId = params?.id;
-  const [showDescriptions, setShowDescriptions] = useState(false);
+
   const queryClient = useQueryClient();
+
   const { toast } = useToast();
 
   const { data: meeting, isLoading: loadingMeeting } = useQuery<Meeting>({
@@ -46,47 +45,7 @@ export default function MeetingDetail() {
   const { data: actionItems, isLoading: loadingActions } = useQuery<
     ActionItem[]
   >({
-    queryKey: ["/api/action-items"],
-  });
-
-  const updateActionItemMutation = useMutation({
-    mutationFn: async ({
-      id,
-      completed,
-    }: {
-      id: string;
-      completed: boolean;
-    }) => {
-      return apiRequest("PATCH", `/api/action-items/${id}`, { completed });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/action-items"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
-    },
-  });
-
-  const generateDescriptionMutation = useMutation({
-    mutationFn: async (actionItemId: string) => {
-      return apiRequest(
-        "POST",
-        `/api/action-items/${actionItemId}/generate-description`,
-      );
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/action-items"] });
-      toast({
-        title: "Description has been generated!",
-        description:
-          "AI has generated a detailed description for this action item.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Unable to create description. Please try again.",
-        variant: "destructive",
-      });
-    },
+    queryKey: ["/api/meetings", meetingId, "action-items"],
   });
 
   const generateBulkDescriptionsMutation = useMutation({
@@ -112,11 +71,6 @@ export default function MeetingDetail() {
     },
   });
 
-  // Filter action items for this meeting
-  const meetingActionItems = actionItems?.filter(
-    (item) => item.meetingId === meetingId,
-  );
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
@@ -128,23 +82,6 @@ export default function MeetingDetail() {
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "medium":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "low":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  const handleToggleComplete = (id: string, completed: boolean) => {
-    updateActionItemMutation.mutate({ id, completed: !completed });
   };
 
   if (loadingMeeting || loadingActions) {
@@ -190,7 +127,7 @@ export default function MeetingDetail() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
-          <Link href="/meetings" className="text-primary hover:text-primary/80">
+          <Link href="/" className="text-primary hover:text-primary/80">
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Meetings
@@ -327,22 +264,9 @@ export default function MeetingDetail() {
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckSquare className="h-5 w-5" />
-                Action Items ({meetingActionItems?.length || 0})
+                Action Items ({actionItems?.length || 0})
               </div>
               <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowDescriptions(!showDescriptions)}
-                >
-                  {showDescriptions ? (
-                    <EyeOff className="h-4 w-4 mr-2" />
-                  ) : (
-                    <Eye className="h-4 w-4 mr-2" />
-                  )}
-                  {showDescriptions ? "Hide Descriptions" : "Show Descriptions"}
-                </Button>
-
                 <Button
                   variant="outline"
                   size="sm"
@@ -359,17 +283,17 @@ export default function MeetingDetail() {
                     : "Generate All Descriptions"}
                 </Button>
 
-                {meetingActionItems && meetingActionItems.length > 0 && (
+                {actionItems && actionItems.length > 0 && (
                   <div className="text-sm text-gray-600">
-                    {meetingActionItems.filter((item) => item.completed).length}{" "}
-                    of {meetingActionItems.length} completed
+                    {actionItems.filter((item) => item.completed).length} of{" "}
+                    {actionItems.length} completed
                   </div>
                 )}
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {!meetingActionItems || meetingActionItems.length === 0 ? (
+            {!actionItems || actionItems.length === 0 ? (
               <div className="text-center py-8">
                 <CheckSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <p className="text-gray-600">
@@ -381,7 +305,7 @@ export default function MeetingDetail() {
               </div>
             ) : (
               <div className="space-y-4">
-                {meetingActionItems
+                {actionItems
                   .sort((a, b) => {
                     if (a.completed !== b.completed)
                       return a.completed ? 1 : -1;
@@ -392,105 +316,7 @@ export default function MeetingDetail() {
                     );
                   })
                   .map((item) => (
-                    <div
-                      key={item.id}
-                      className={`border-2 rounded-lg p-4 transition-all duration-200 ${
-                        item.completed
-                          ? "border-gray-200 bg-gray-50 opacity-75"
-                          : item.priority === "high"
-                            ? "border-red-200 bg-red-50"
-                            : item.priority === "medium"
-                              ? "border-orange-200 bg-orange-50"
-                              : "border-blue-200 bg-blue-50"
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex items-center pt-1">
-                          <Checkbox
-                            checked={item.completed}
-                            onCheckedChange={() =>
-                              handleToggleComplete(item.id, item.completed)
-                            }
-                            className="h-5 w-5"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <p
-                              className={`text-base font-medium ${item.completed ? "line-through text-gray-500" : "text-gray-900"}`}
-                            >
-                              {item.text}
-                            </p>
-                            <div className="flex items-center gap-2 ml-4">
-                              {!item.description && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    generateDescriptionMutation.mutate(item.id)
-                                  }
-                                  disabled={
-                                    generateDescriptionMutation.isPending
-                                  }
-                                  className="text-xs"
-                                >
-                                  <Sparkles className="h-3 w-3 mr-1" />
-                                  Generate AI Description
-                                </Button>
-                              )}
-                              <Badge
-                                className={getPriorityColor(item.priority)}
-                              >
-                                {item.priority === "high" && (
-                                  <AlertTriangle className="h-3 w-3 mr-1" />
-                                )}
-                                {item.priority.toUpperCase()}
-                              </Badge>
-                              {!item.completed && item.priority === "high" && (
-                                <span className="text-red-500 text-lg">🔥</span>
-                              )}
-                            </div>
-                          </div>
-
-                          {showDescriptions && item.description && (
-                            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                              <p className="text-sm text-blue-800 font-medium mb-1">
-                                AI Generated Description:
-                              </p>
-                              <p className="text-sm text-blue-700">
-                                {item.description}
-                              </p>
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between text-sm text-gray-600">
-                            <div className="flex items-center gap-4">
-                              {item.assignee && (
-                                <div className="flex items-center gap-1">
-                                  <Users className="h-4 w-4" />
-                                  <span>{item.assignee}</span>
-                                </div>
-                              )}
-                              {item.dueDate && (
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>
-                                    Due{" "}
-                                    {new Date(
-                                      item.dueDate,
-                                    ).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <span className="text-xs text-gray-400">
-                              Created{" "}
-                              {new Date(item.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <Action key={item.id} item={item} />
                   ))}
               </div>
             )}
