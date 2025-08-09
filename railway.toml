@@ -1,0 +1,7 @@
+[build]
+buildCommand = "docker build --build-arg VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID -t auto-note ."
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "never"

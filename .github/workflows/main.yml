@@ -29,9 +29,10 @@ jobs:
           RAILWAY_ENVIRONMENT_ID: ${{ secrets.RAILWAY_ENVIRONMENT_ID }}
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           SVC_ID: ${{ secrets.SVC_ID }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
         run: |
           if [ -n "${SVC_ID}" ]; then
-            railway up --service "${SVC_ID}" --environment "${RAILWAY_ENVIRONMENT_ID}" 
+            railway up --service "${SVC_ID}" --environment "${RAILWAY_ENVIRONMENT_ID}"
           else
-            railway up --environment "${RAILWAY_ENVIRONMENT_ID}"
+            railway up --environment "${RAILWAY_ENVIRONMENT_ID}"          
           fi
