@@ -28,7 +28,7 @@ export async function setupVite(app: Express, server: Server) {
 
   const vite = await createViteServer({
     ...viteConfig,
-    configFile: false,
+    configFile: path.resolve(import.meta.dirname, "../vite.config.ts"),
     customLogger: {
       ...viteLogger,
       error: (msg, options) => {

@@ -3,7 +3,6 @@ import {
   createContext,
   useContext,
   PropsWithChildren,
-  useRef,
   useState,
   useMemo,
 } from "react";
@@ -23,7 +22,7 @@ export function SocketProvider({ children }: PropsWithChildren) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const s = io("localhost:3000", {
+    const s = io({
       transports: ["websocket"],
       auth: {
         token: "1",
