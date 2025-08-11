@@ -48,11 +48,6 @@ export async function processTranscription(
 
     // Create action items
     for (const item of actionItems) {
-      const description = await generateActionItemDescription(
-        item.text,
-        transcriptionResult.text.substring(0, 500),
-      );
-
       const action = await storage.createActionItem({
         meetingId,
         text: item.text,
@@ -60,7 +55,7 @@ export async function processTranscription(
         priority: item?.priority,
         dueDate: item?.dueDate || null,
         completed: false,
-        description: description,
+        description: null,
         userId,
       });
       actions.push(action);
