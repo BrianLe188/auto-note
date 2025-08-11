@@ -3,7 +3,6 @@ import {
   pgTable,
   text,
   varchar,
-  jsonb,
   timestamp,
   integer,
   boolean,
@@ -11,11 +10,40 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export const assets = pgTable("assets", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .references(() => users.id)
+    .notNull()
+    .unique(),
+  currentTier: varchar("current_tier").default("Free"),
+  transcriptionCount: integer("transcription_count").default(5),
+  actionPerTime: integer("action_per_time").default(10),
+  actionDescriptionAllow: boolean("action_description_allow").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const subscriptions = pgTable("subscriptions", {
+  id: varchar("id")
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  userId: varchar("user_id")
+    .references(() => users.id)
+    .notNull(),
+  productId: varchar("product_id").notNull(),
+  subscriptionId: varchar("subscription_id").notNull(),
+  tier: varchar("tier").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const meetings = pgTable("meetings", {
   id: varchar("id")
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  userId: varchar("userId")
+  userId: varchar("user_id")
     .references(() => users.id)
     .notNull(),
   title: text("title").notNull(),
@@ -37,7 +65,7 @@ export const actionItems = pgTable("action_items", {
   meetingId: varchar("meeting_id")
     .references(() => meetings.id)
     .notNull(),
-  userId: varchar("userId")
+  userId: varchar("user_id")
     .references(() => users.id)
     .notNull(),
   text: text("text").notNull(),
@@ -136,6 +164,16 @@ export const insertSessionSchema = createInsertSchema(sessions).omit({
   createdAt: true,
 });
 
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAssetSchema = createInsertSchema(assets).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertMeeting = z.infer<typeof insertMeetingSchema>;
 export type Meeting = typeof meetings.$inferSelect;
 export type InsertActionItem = z.infer<typeof insertActionItemSchema>;
@@ -148,3 +186,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertSession = z.infer<typeof insertSessionSchema>;
 export type Session = typeof sessions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertAsset = z.infer<typeof insertAssetSchema>;
+export type Asset = typeof assets.$inferSelect;

@@ -8,6 +8,7 @@ import {
 } from "@server/controllers/meeting";
 import { authenticateUser } from "@server/middlewares/auth";
 import { upload } from "@server/middlewares/upload";
+import { transcriptionCountCheck } from "@server/middlewares/tier";
 
 export function registerMeetingRoutes() {
   const router = Router();
@@ -15,6 +16,7 @@ export function registerMeetingRoutes() {
   router.post(
     "/upload",
     authenticateUser,
+    transcriptionCountCheck,
     upload.single("audioFile"),
     meetingUpload,
   );

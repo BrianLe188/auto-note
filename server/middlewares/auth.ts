@@ -4,6 +4,7 @@ import crypto from "crypto";
 import type { Request, Response, NextFunction } from "express";
 import type { User, Session } from "@shared/schema";
 import { storage } from "@server/storage";
+import { AppError } from "./error-handler";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-fallback-secret-key-for-development";
@@ -54,7 +55,7 @@ export async function createSession(userId: string): Promise<Session> {
 
 export async function authenticateUser(
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) {
   try {
@@ -64,30 +65,30 @@ export async function authenticateUser(
       : null;
 
     if (!token) {
-      return res.status(401).json({ error: "Authentication required" });
+      return next(new AppError("Authentication required", 401));
     }
 
     const decoded = verifyToken(token);
     if (!decoded) {
-      return res.status(401).json({ error: "Invalid token" });
+      return next(new AppError("Invalid token", 401));
     }
 
     const user = await storage.getUserById(decoded.userId);
+
     if (!user) {
-      return res.status(401).json({ error: "User not found" });
+      return next(new AppError("User not found", 401));
     }
 
     req.user = user;
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
-    res.status(500).json({ error: "Internal server error" });
+    next(new AppError("Internal server error", 500));
   }
 }
 
 export async function optionalAuth(
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction,
 ) {
   try {

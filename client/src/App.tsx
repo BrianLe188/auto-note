@@ -10,6 +10,7 @@ import { SocketProvider } from "./hooks/use-socket";
 import { queryClient } from "./lib/queryClient";
 import Login from "./pages/auth/login";
 import MeetingDetail from "./pages/main/meeting-detail";
+import { AppProvider } from "./hooks/use-app";
 
 function Router() {
   return (
@@ -27,11 +28,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID!}>
-          <AuthProvider>
-            <SocketProvider>
-              <Router />
-            </SocketProvider>
-          </AuthProvider>
+          <AppProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <Router />
+              </SocketProvider>
+            </AuthProvider>
+          </AppProvider>
         </GoogleOAuthProvider>
         <Toaster />
       </TooltipProvider>

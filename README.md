@@ -1,6 +1,6 @@
 # Overview
 
-TranscribeAI is a meeting automation platform that provides audio transcription and action item extraction services. The application uses AI-powered transcription through OpenAI's Whisper API to convert meeting recordings into text and then automatically extracts actionable items from the transcripts. It features A/B testing capabilities to compare different transcription models and prompts for optimization.
+Auto Note is a meeting automation platform that provides audio transcription and action item extraction services. The application uses AI-powered transcription through OpenAI's Whisper API to convert meeting recordings into text and then automatically extracts actionable items from the transcripts. It features A/B testing capabilities to compare different transcription models and prompts for optimization.
 
 # User Preferences
 
@@ -74,4 +74,3 @@ The application implements a comprehensive A/B testing system that allows compar
 - **Test Variants**: Support for multiple models (default, enhanced, speed) with different prompts
 - **Metrics Tracking**: Accuracy rates, processing times, and action item extraction counts
 - **Random Assignment**: Automatic assignment of meetings to test groups for unbiased results
-

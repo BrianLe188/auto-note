@@ -1,0 +1,1 @@
+ALTER TABLE "assets" ADD CONSTRAINT "assets_user_id_unique" UNIQUE("user_id");

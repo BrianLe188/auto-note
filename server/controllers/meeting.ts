@@ -17,11 +17,11 @@ export async function meetingUpload(
 
     const { title, date, participants, abTestGroup = "default" } = req.body;
 
-    const user = req.user!;
-
     if (!title || !date || !participants) {
       return next(new AppError("Missing required fields", 400));
     }
+
+    const user = req.user!;
 
     // Create meeting record
     const meetingData = {
@@ -37,6 +37,8 @@ export async function meetingUpload(
 
     const meeting = await storage.createMeeting(meetingData);
 
+    await storage.updateAssetFieldBy(user.id, "transcriptionCount", -1);
+
     // Start transcription process (async)
     processTranscription(meeting.id, user.id, req.file.path, abTestGroup);
 
@@ -45,7 +47,6 @@ export async function meetingUpload(
       message: "Upload successful, transcription started",
     });
   } catch (error) {
-    console.error(error);
     next(
       new AppError(
         error instanceof Error ? error.message : "Unknown error",

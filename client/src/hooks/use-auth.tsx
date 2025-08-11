@@ -16,10 +16,19 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
+  profileImageUrl: string;
+}
+
+interface Asset {
+  currentTier: string;
+  actionDescriptionAllow: boolean;
+  actionPerTime: number;
+  transcriptionCount: number;
 }
 
 interface AuthContextType {
   user: User | null;
+  asset: Asset | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -80,6 +89,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     },
     enabled: !!token,
     retry: false,
+  });
+
+  const { data: asset } = useQuery({
+    queryKey: ["/api/assets"],
+    enabled: !!token,
   });
 
   const loginMutation = useMutation({
@@ -190,7 +204,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const value = useMemo(
     () => ({
-      user: user || null,
+      user: (user as User) || null,
+      asset: (asset as Asset) || null,
       isLoading:
         isLoading || loginMutation.isPending || signupMutation.isPending,
       isAuthenticated: !!user,

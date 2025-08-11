@@ -30,17 +30,24 @@ export default function TranscriptionProgress() {
 
     socket.on(
       "meeting:init",
-      (data: { meetingId: string; percent: number }) => {
+      (data: { meetingId: string; percent: number; status?: string }) => {
         setLocalMeetings((state) => {
           let doneMeeting: Meeting | null = null;
 
           const updated = state.map((meeting) => {
             if (meeting.id === data.meetingId) {
               const updated = { ...meeting, percent: data.percent };
+
+              if (data?.status === "failed") {
+                updated.status = data.status;
+                return updated;
+              }
+
               if (data.percent >= 100) {
                 updated.status = "completed";
                 doneMeeting = updated;
               }
+
               return updated;
             }
             return meeting;
@@ -49,15 +56,15 @@ export default function TranscriptionProgress() {
           setTimeout(() => {
             if (doneMeeting) {
               emitter.emit("meeting:done", doneMeeting);
-
-              queryClient.invalidateQueries({
-                queryKey: ["/api/action-items"],
-              });
-              queryClient.invalidateQueries({
-                queryKey: ["/api/meetings"],
-              });
-              queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
             }
+
+            queryClient.invalidateQueries({
+              queryKey: ["/api/action-items"],
+            });
+            queryClient.invalidateQueries({
+              queryKey: ["/api/meetings"],
+            });
+            queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
           }, 0);
 
           return updated;

@@ -1,4 +1,4 @@
-import express from "express";
+import express, { urlencoded } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { registerSocket } from "./socket";
@@ -44,6 +44,8 @@ app.use((req, res, next) => {
 
 (async () => {
   app.use(responseHandler);
+
+  app.use(urlencoded({ extended: true }));
 
   const server = await registerRoutes(app);
 

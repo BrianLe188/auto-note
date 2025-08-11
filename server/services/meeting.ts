@@ -95,8 +95,11 @@ export async function processTranscription(
     });
   } catch (error) {
     console.error("Transcription processing error:", error);
+
     await storage.updateMeeting(meetingId, {
       status: "failed",
     });
+
+    emitter.emit("meeting:init", { meetingId, percent: 0, status: "failed" });
   }
 }

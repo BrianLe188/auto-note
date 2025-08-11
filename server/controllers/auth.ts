@@ -37,6 +37,10 @@ export async function signUp(req: Request, res: Response, next: NextFunction) {
       isEmailVerified: false,
     });
 
+    await storage.createAsset({
+      userId: user.id,
+    });
+
     // Generate token
     const token = generateToken(user.id);
 
@@ -153,6 +157,10 @@ export async function loginGoogle(
         provider: "google",
         providerId: googleUserInfo?.sub,
         isEmailVerified: true,
+      });
+
+      await storage.createAsset({
+        userId: user.id,
       });
     }
 

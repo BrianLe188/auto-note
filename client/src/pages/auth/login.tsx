@@ -62,7 +62,7 @@ export default function Login() {
       await login(data.email, data.password);
       toast({
         title: "Login successful",
-        description: "Welcome back to TranscribeAI!",
+        description: "Welcome back to Auto Note!",
       });
     } catch (error) {
       toast({
@@ -79,7 +79,7 @@ export default function Login() {
       await signup(data);
       toast({
         title: "Account created successfully",
-        description: "Welcome to TranscribeAI!",
+        description: "Welcome to Auto Note!",
       });
     } catch (error) {
       toast({
@@ -123,7 +123,7 @@ export default function Login() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">TranscribeAI</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Auto Note</h1>
           <p className="text-sm text-gray-600 mt-1">
             Meeting Automation Platform
           </p>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,16 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { CloudUpload, Play } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Sparkles } from "lucide-react";
+import { useApp } from "@/hooks/use-app";
 
 const uploadSchema = z.object({
   title: z.string().min(1, "Meeting title is required"),
@@ -33,6 +43,8 @@ export default function FileUpload() {
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const limitReachedDialogRef = useRef<LimitReachedDialogRef | null>(null);
 
   const form = useForm<UploadForm>({
     resolver: zodResolver(uploadSchema),
@@ -85,7 +97,7 @@ export default function FileUpload() {
 
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
         title: "Upload Successful",
         description:
@@ -107,6 +119,9 @@ export default function FileUpload() {
         description: error.message,
         variant: "destructive",
       });
+
+      limitReachedDialogRef.current?.open();
+
       setUploadProgress(0);
     },
   });
@@ -176,6 +191,7 @@ export default function FileUpload() {
 
   return (
     <Card>
+      <LimitReachedDialog ref={limitReachedDialogRef} />
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900">
@@ -332,3 +348,55 @@ export default function FileUpload() {
     </Card>
   );
 }
+
+interface LimitReachedDialogRef {
+  open: () => void;
+  close: () => void;
+}
+
+const LimitReachedDialog = forwardRef<LimitReachedDialogRef, any>((_, ref) => {
+  const { products } = useApp();
+
+  const [open, setOpen] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+  }));
+  console.log(products);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-w-xs sm:max-w-md rounded-2xl shadow-2xl bg-gradient-to-br from-white via-zinc-50 to-zinc-100 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-900 border-none">
+        <DialogHeader className="flex items-center gap-2">
+          <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-primary/70 bg-opacity-10">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </span>
+          <DialogTitle className="ml-2 text-lg font-bold tracking-tight text-gray-900 dark:text-gray-50">
+            Limit Reached
+          </DialogTitle>
+        </DialogHeader>
+        <DialogDescription className="text-gray-600 dark:text-gray-300 py-2 text-center">
+          You have reached the limit, please upgrade your tier to continue using
+          transcription!
+        </DialogDescription>
+        <DialogFooter>
+          <a
+            href={products?.[0].short_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full"
+          >
+            <Button
+              className="w-full py-2 px-4 text-base font-semibold rounded-lg bg-gradient-to-r from-primary to-primary/80 shadow-lg hover:scale-[1.03] transition-all"
+              variant="default"
+              size="lg"
+            >
+              Upgrade Now
+            </Button>
+          </a>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+});

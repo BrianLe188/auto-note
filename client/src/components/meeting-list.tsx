@@ -30,7 +30,7 @@ export default function MeetingList({ limit, searchQuery }: MeetingListProps) {
     emitter.on("meeting:done", (data) => {
       setLocalMeetings((state) => {
         const doneMeetings = state.filter(
-          (meeting) => meeting.status === "completed",
+          (meeting) => meeting.status !== "processing",
         );
         return [data, ...doneMeetings];
       });
