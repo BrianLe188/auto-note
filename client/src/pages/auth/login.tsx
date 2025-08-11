@@ -173,6 +173,7 @@ export default function Login() {
                 variant="outline"
                 className="w-full h-11 flex items-center justify-center space-x-2"
                 onClick={() => handleOAuthLogin("apple")}
+                disabled
               >
                 <svg
                   className="w-5 h-5"
@@ -185,208 +186,208 @@ export default function Login() {
               </Button>
             </div>
 
-            <div className="relative">
-              <Separator />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-white px-2 text-xs text-gray-500 uppercase tracking-wide">
-                  Or continue with email
-                </span>
-              </div>
-            </div>
+            {/* <div className="relative"> */}
+            {/*   <Separator /> */}
+            {/*   <div className="absolute inset-0 flex items-center justify-center"> */}
+            {/*     <span className="bg-white px-2 text-xs text-gray-500 uppercase tracking-wide"> */}
+            {/*       Or continue with email */}
+            {/*     </span> */}
+            {/*   </div> */}
+            {/* </div> */}
 
             {/* Email/Password Form */}
-            {!isSignup ? (
-              <Form {...loginForm}>
-                <form
-                  onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={loginForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <Input
-                              placeholder="Enter your email"
-                              className="pl-10"
-                              type="email"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={loginForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <Input
-                              placeholder="Enter your password"
-                              className="pl-10 pr-10"
-                              type={showPassword ? "text" : "password"}
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button
-                    type="submit"
-                    className="w-full h-11"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Signing in..." : "Sign in"}
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              <Form {...signupForm}>
-                <form
-                  onSubmit={signupForm.handleSubmit(onSignupSubmit)}
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={signupForm.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={signupForm.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={signupForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <Input
-                              placeholder="Enter your email"
-                              className="pl-10"
-                              type="email"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={signupForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <Input
-                              placeholder="Create a password"
-                              className="pl-10 pr-10"
-                              type={showPassword ? "text" : "password"}
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <Button
-                    type="submit"
-                    className="w-full h-11"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Creating account..." : "Create account"}
-                  </Button>
-                </form>
-              </Form>
-            )}
+            {/* {!isSignup ? ( */}
+            {/*   <Form {...loginForm}> */}
+            {/*     <form */}
+            {/*       onSubmit={loginForm.handleSubmit(onLoginSubmit)} */}
+            {/*       className="space-y-4" */}
+            {/*     > */}
+            {/*       <FormField */}
+            {/*         control={loginForm.control} */}
+            {/*         name="email" */}
+            {/*         render={({ field }) => ( */}
+            {/*           <FormItem> */}
+            {/*             <FormLabel>Email</FormLabel> */}
+            {/*             <FormControl> */}
+            {/*               <div className="relative"> */}
+            {/*                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" /> */}
+            {/*                 <Input */}
+            {/*                   placeholder="Enter your email" */}
+            {/*                   className="pl-10" */}
+            {/*                   type="email" */}
+            {/*                   {...field} */}
+            {/*                 /> */}
+            {/*               </div> */}
+            {/*             </FormControl> */}
+            {/*             <FormMessage /> */}
+            {/*           </FormItem> */}
+            {/*         )} */}
+            {/*       /> */}
+            {/**/}
+            {/*       <FormField */}
+            {/*         control={loginForm.control} */}
+            {/*         name="password" */}
+            {/*         render={({ field }) => ( */}
+            {/*           <FormItem> */}
+            {/*             <FormLabel>Password</FormLabel> */}
+            {/*             <FormControl> */}
+            {/*               <div className="relative"> */}
+            {/*                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" /> */}
+            {/*                 <Input */}
+            {/*                   placeholder="Enter your password" */}
+            {/*                   className="pl-10 pr-10" */}
+            {/*                   type={showPassword ? "text" : "password"} */}
+            {/*                   {...field} */}
+            {/*                 /> */}
+            {/*                 <button */}
+            {/*                   type="button" */}
+            {/*                   onClick={() => setShowPassword(!showPassword)} */}
+            {/*                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" */}
+            {/*                 > */}
+            {/*                   {showPassword ? ( */}
+            {/*                     <EyeOff className="h-4 w-4" /> */}
+            {/*                   ) : ( */}
+            {/*                     <Eye className="h-4 w-4" /> */}
+            {/*                   )} */}
+            {/*                 </button> */}
+            {/*               </div> */}
+            {/*             </FormControl> */}
+            {/*             <FormMessage /> */}
+            {/*           </FormItem> */}
+            {/*         )} */}
+            {/*       /> */}
+            {/**/}
+            {/*       <Button */}
+            {/*         type="submit" */}
+            {/*         className="w-full h-11" */}
+            {/*         disabled={isLoading} */}
+            {/*       > */}
+            {/*         {isLoading ? "Signing in..." : "Sign in"} */}
+            {/*       </Button> */}
+            {/*     </form> */}
+            {/*   </Form> */}
+            {/* ) : ( */}
+            {/*   <Form {...signupForm}> */}
+            {/*     <form */}
+            {/*       onSubmit={signupForm.handleSubmit(onSignupSubmit)} */}
+            {/*       className="space-y-4" */}
+            {/*     > */}
+            {/*       <div className="grid grid-cols-2 gap-4"> */}
+            {/*         <FormField */}
+            {/*           control={signupForm.control} */}
+            {/*           name="firstName" */}
+            {/*           render={({ field }) => ( */}
+            {/*             <FormItem> */}
+            {/*               <FormLabel>First Name</FormLabel> */}
+            {/*               <FormControl> */}
+            {/*                 <Input placeholder="John" {...field} /> */}
+            {/*               </FormControl> */}
+            {/*               <FormMessage /> */}
+            {/*             </FormItem> */}
+            {/*           )} */}
+            {/*         /> */}
+            {/**/}
+            {/*         <FormField */}
+            {/*           control={signupForm.control} */}
+            {/*           name="lastName" */}
+            {/*           render={({ field }) => ( */}
+            {/*             <FormItem> */}
+            {/*               <FormLabel>Last Name</FormLabel> */}
+            {/*               <FormControl> */}
+            {/*                 <Input placeholder="Doe" {...field} /> */}
+            {/*               </FormControl> */}
+            {/*               <FormMessage /> */}
+            {/*             </FormItem> */}
+            {/*           )} */}
+            {/*         /> */}
+            {/*       </div> */}
+            {/**/}
+            {/*       <FormField */}
+            {/*         control={signupForm.control} */}
+            {/*         name="email" */}
+            {/*         render={({ field }) => ( */}
+            {/*           <FormItem> */}
+            {/*             <FormLabel>Email</FormLabel> */}
+            {/*             <FormControl> */}
+            {/*               <div className="relative"> */}
+            {/*                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" /> */}
+            {/*                 <Input */}
+            {/*                   placeholder="Enter your email" */}
+            {/*                   className="pl-10" */}
+            {/*                   type="email" */}
+            {/*                   {...field} */}
+            {/*                 /> */}
+            {/*               </div> */}
+            {/*             </FormControl> */}
+            {/*             <FormMessage /> */}
+            {/*           </FormItem> */}
+            {/*         )} */}
+            {/*       /> */}
+            {/**/}
+            {/*       <FormField */}
+            {/*         control={signupForm.control} */}
+            {/*         name="password" */}
+            {/*         render={({ field }) => ( */}
+            {/*           <FormItem> */}
+            {/*             <FormLabel>Password</FormLabel> */}
+            {/*             <FormControl> */}
+            {/*               <div className="relative"> */}
+            {/*                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" /> */}
+            {/*                 <Input */}
+            {/*                   placeholder="Create a password" */}
+            {/*                   className="pl-10 pr-10" */}
+            {/*                   type={showPassword ? "text" : "password"} */}
+            {/*                   {...field} */}
+            {/*                 /> */}
+            {/*                 <button */}
+            {/*                   type="button" */}
+            {/*                   onClick={() => setShowPassword(!showPassword)} */}
+            {/*                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600" */}
+            {/*                 > */}
+            {/*                   {showPassword ? ( */}
+            {/*                     <EyeOff className="h-4 w-4" /> */}
+            {/*                   ) : ( */}
+            {/*                     <Eye className="h-4 w-4" /> */}
+            {/*                   )} */}
+            {/*                 </button> */}
+            {/*               </div> */}
+            {/*             </FormControl> */}
+            {/*             <FormMessage /> */}
+            {/*           </FormItem> */}
+            {/*         )} */}
+            {/*       /> */}
+            {/**/}
+            {/*       <Button */}
+            {/*         type="submit" */}
+            {/*         className="w-full h-11" */}
+            {/*         disabled={isLoading} */}
+            {/*       > */}
+            {/*         {isLoading ? "Creating account..." : "Create account"} */}
+            {/*       </Button> */}
+            {/*     </form> */}
+            {/*   </Form> */}
+            {/* )} */}
 
             {/* Toggle between login/signup */}
-            <div className="text-center">
-              <button
-                onClick={() => setIsSignup(!isSignup)}
-                className="text-sm text-primary hover:text-primary/80 font-medium"
-              >
-                {isSignup
-                  ? "Already have an account? Sign in"
-                  : "Don't have an account? Sign up"}
-              </button>
-            </div>
+            {/* <div className="text-center"> */}
+            {/*   <button */}
+            {/*     onClick={() => setIsSignup(!isSignup)} */}
+            {/*     className="text-sm text-primary hover:text-primary/80 font-medium" */}
+            {/*   > */}
+            {/*     {isSignup */}
+            {/*       ? "Already have an account? Sign in" */}
+            {/*       : "Don't have an account? Sign up"} */}
+            {/*   </button> */}
+            {/* </div> */}
 
             {/* Forgot Password Link (only show on login) */}
-            {!isSignup && (
-              <div className="text-center">
-                <button className="text-xs text-gray-500 hover:text-gray-700">
-                  Forgot your password?
-                </button>
-              </div>
-            )}
+            {/* {!isSignup && ( */}
+            {/*   <div className="text-center"> */}
+            {/*     <button className="text-xs text-gray-500 hover:text-gray-700"> */}
+            {/*       Forgot your password? */}
+            {/*     </button> */}
+            {/*   </div> */}
+            {/* )} */}
           </CardContent>
         </Card>
 

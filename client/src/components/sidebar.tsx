@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { emitter } from "@/eventbus";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Upload,
   FileText,
@@ -26,6 +27,8 @@ export default function Sidebar({
   onTabChange,
   stats,
 }: SidebarProps) {
+  const { logout } = useAuth();
+
   const menuItems = [
     { id: "upload", label: "Upload & Transcribe", icon: Upload },
     { id: "meetings", label: "Meeting Library", icon: FileText },
@@ -67,10 +70,14 @@ export default function Sidebar({
 
           {/* Quick Access Links */}
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-              Quick Access
-            </p>
-            <div className="space-y-1"></div>
+            {/* <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2"> */}
+            {/*   Quick Access */}
+            {/* </p> */}
+            <div className="space-y-1">
+              <Button variant={"secondary"} className="w-full" onClick={logout}>
+                Logout
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
